@@ -3,18 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
-#include "GenerationTasks.generated.h"
+#include "OurCraft/Utils/DelegateUtils.h"
+#include "OurCraft/Utils/AsyncTypes.h"
 
 /**
  * 
  */
 
+class APlanetChunkActor;
 
 /*Library class for async task in generation*/
-UCLASS()
-class OURCRAFT_API UGenerationTasks : public UBlueprintFunctionLibrary
-{
-	GENERATED_BODY()
+class OURCRAFT_API UGenerationTasks{
+
+	static void GenerateDensityFieldForChunkAsync(APlanetChunkActor* TargetChunk, FDensityFieldGenerationTaskComplete* CallBackFunction = nullptr);
 	
+	static void GenerateMeshDataForChunkAsync(APlanetChunkActor* TargetChunk, FMeshDataGenerationTaskComplete* CallBackFunction = nullptr);
 };
