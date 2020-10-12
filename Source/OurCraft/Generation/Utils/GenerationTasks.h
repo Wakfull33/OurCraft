@@ -15,6 +15,7 @@ class APlanetChunkActor;
 /*Library class for async task in generation*/
 class OURCRAFT_API UGenerationTasks{
 
+public:
 	static void GenerateDensityFieldForChunkAsync(APlanetChunkActor* TargetChunk, FDensityFieldGenerationTaskComplete* CallBackFunction = nullptr);
 	
 	static void GenerateMeshDataForChunkAsync(APlanetChunkActor* TargetChunk, FMeshDataGenerationTaskComplete* CallBackFunction = nullptr);

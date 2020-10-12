@@ -2,6 +2,7 @@
 
 
 #include "AsyncTypes.h"
+#include "OurCraft/Generation/PlanetChunkActor.h"
 
 FChunkDensityFieldGenerationAsyncTask::FChunkDensityFieldGenerationAsyncTask(APlanetChunkActor* TargetChunk, FDensityFieldGenerationTaskComplete* CallBack) {
 	PlanetChunk = TargetChunk;
@@ -11,12 +12,10 @@ FChunkDensityFieldGenerationAsyncTask::FChunkDensityFieldGenerationAsyncTask(APl
 
 void FChunkDensityFieldGenerationAsyncTask::DoWork() {
 
-	//TODO generate noise field
-
+	PlanetChunk->GenerateDensityField();
 	if (EndEventCallBack->IsBound()) {
 		//Work is complete, callback to GameThread
-		const TFunction<void()> FuncCallBack = [this] {EndEventCallBack->Execute(); };
-		AsyncTask(ENamedThreads::GameThread, FuncCallBack);
+		AsyncTask(ENamedThreads::GameThread, [this] {EndEventCallBack->Execute(); });
 	}
 }
 
@@ -32,9 +31,9 @@ FChunkMeshDataGenerationAsyncTask::FChunkMeshDataGenerationAsyncTask(APlanetChun
 void FChunkMeshDataGenerationAsyncTask::DoWork() {
 
 	MeshData = FMeshData();
-	//TODO compute mesh data
-	
+	PlanetChunk->GenerateMeshData(MeshData);
 	if (EndEventCallBack->IsBound()) {
+		//Work is complete, callback to GameThread
 		AsyncTask(ENamedThreads::GameThread, [this]() {EndEventCallBack->Execute(MeshData); });
 	}
 }
