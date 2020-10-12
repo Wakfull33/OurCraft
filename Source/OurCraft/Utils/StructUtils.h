@@ -7,6 +7,7 @@
 #include "ProceduralMeshComponent.h" 
 #include "StructUtils.generated.h"
 
+enum EItemType;
 
 USTRUCT(BlueprintType)
 struct FMeshData {
@@ -32,9 +33,42 @@ struct FMeshData {
 	TArray<FProcMeshTangent> Tangents;
 };
 
+#pragma region Items Structs
+
+USTRUCT(BlueprintType)
+struct FItemData
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	FString ItemName = "Default Name";
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	FString ItemDescription = "Default Description";
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	FString ItemMeshPath = "";
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	FString ItemIcon = "";
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	int ItemValue = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
+	FString ItemType;
+};
+
+
+#pragma endregion 
+
 UCLASS()
 class OURCRAFT_API UStructUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 	
 };
+
+
