@@ -1,0 +1,3 @@
+ItemName,ItemDescription,ItemMeshPath,ItemIcon,ItemValue,ItemType
+Sword,Basic sword,//////,//////,12,IT_WEAPON
+Pickaxe,Simple pickaxe,//////,//////,10,IT_TOOL
