@@ -2,42 +2,26 @@
 
 
 #include "AsyncTypes.h"
-#include "OurCraft/Generation/PlanetChunkActor.h"
 
-FChunkDensityFieldGenerationAsyncTask::FChunkDensityFieldGenerationAsyncTask(APlanetChunkActor* TargetChunk, FDensityFieldGenerationTaskComplete* CallBack) {
-	PlanetChunk = TargetChunk;
-	EndEventCallBack = CallBack;
+FGenerationAsyncTask::FGenerationAsyncTask(FGenerationTaskWork* Work, FGenerationTaskComplete* CallBack, FGenerationAsyncResult* ObjectForContainsResults) {
+	WorkDelegate = Work;
+	CallBackDelegate = CallBack;
+	ResultData = ObjectForContainsResults;
 }
 
+void FGenerationAsyncTask::DoWork() {
 
-void FChunkDensityFieldGenerationAsyncTask::DoWork() {
-
-	PlanetChunk->GenerateDensityField();
-	if (EndEventCallBack->IsBound()) {
+	if (WorkDelegate->IsBound()) {
+		//Executing async work
+		WorkDelegate->Execute(ResultData);
+	}
+	if (CallBackDelegate->IsBound()) {
 		//Work is complete, callback to GameThread
-		AsyncTask(ENamedThreads::GameThread, [this] {EndEventCallBack->Execute(); });
+		AsyncTask(ENamedThreads::GameThread, [this] {CallBackDelegate->Execute(ResultData); });
 	}
 }
 
-TStatId FChunkDensityFieldGenerationAsyncTask::GetStatId() const {
-	RETURN_QUICK_DECLARE_CYCLE_STAT(FChunkDensityFieldGenerationAsyncTask, STATGROUP_ThreadPoolAsyncTasks);
+TStatId FGenerationAsyncTask::GetStatId() const {
+	RETURN_QUICK_DECLARE_CYCLE_STAT(FGenerationAsyncTask, STATGROUP_ThreadPoolAsyncTasks);
 }
 
-FChunkMeshDataGenerationAsyncTask::FChunkMeshDataGenerationAsyncTask(APlanetChunkActor* TargetChunk, FMeshDataGenerationTaskComplete* CallBack) {
-	PlanetChunk = TargetChunk;
-	EndEventCallBack = CallBack;
-}
-
-void FChunkMeshDataGenerationAsyncTask::DoWork() {
-
-	MeshData = FMeshData();
-	PlanetChunk->GenerateMeshData(MeshData);
-	if (EndEventCallBack->IsBound()) {
-		//Work is complete, callback to GameThread
-		AsyncTask(ENamedThreads::GameThread, [this]() {EndEventCallBack->Execute(MeshData); });
-	}
-}
-
-TStatId FChunkMeshDataGenerationAsyncTask::GetStatId() const {
-	RETURN_QUICK_DECLARE_CYCLE_STAT(FChunkMeshDataGenerationAsyncTask, STATGROUP_ThreadPoolAsyncTasks);
-}

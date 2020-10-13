@@ -5,6 +5,6 @@
 #include "CoreMinimal.h"
 #include "StructUtils.h"
 
-DECLARE_DELEGATE(FDensityFieldGenerationTaskComplete);
-DECLARE_DELEGATE_OneParam(FMeshDataGenerationTaskComplete, FMeshData&);
+DECLARE_DELEGATE_OneParam(FGenerationTaskWork, FGenerationAsyncResult*);
+DECLARE_DELEGATE_OneParam(FGenerationTaskComplete, FGenerationAsyncResult*);
 

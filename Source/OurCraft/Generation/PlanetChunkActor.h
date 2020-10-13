@@ -31,6 +31,9 @@ public:
 	int ChunkSize;
 
 	UPROPERTY()
+	float CellSize;
+
+	UPROPERTY()
 	APlanetActor* PlanetOwner;
 
 	UPROPERTY()
@@ -48,21 +51,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void InitialiseChunk(int X, int Y, int Z, int ChunkSideSize, APlanetActor* ChunkPlanetOwner);
+	void InitialiseChunk(int X, int Y, int Z, int ChunkSideSize, float VoxelSize, APlanetActor* ChunkPlanetOwner);
 
 
 	void GenerateChunkAsync();
 	void GenerateDensityFieldAsync();
-	void GenerateDensityFieldAsync(FDensityFieldGenerationTaskComplete* Delegate);
 	void GenerateMeshDataAsync();
-	void GenerateMeshDataAsync(FMeshDataGenerationTaskComplete* Delegate);
 	
-	void GenerateDensityField();
-	void FinishGenerateDensityFieldAsync();
-	void GenerateMeshData(FMeshData& MeshData);
-	void FinishGenerateMeshDataAsync(FMeshData& MeshData);
+	void GenerateDensityField(FGenerationAsyncResult* NoiseData);
+	void FinishGenerateDensityFieldAsync(FGenerationAsyncResult* NoiseData);
+	void GenerateMeshData(FGenerationAsyncResult* MeshData);
+	void FinishGenerateMeshDataAsync(FGenerationAsyncResult* MeshData);
 	
-	void CreateChunkMesh(FMeshData& MeshData);
+	void CreateChunkMesh(FMeshDataResult* MeshData);
 
 protected:
 	// Called when the game starts or when spawned

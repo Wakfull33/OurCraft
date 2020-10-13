@@ -9,41 +9,22 @@
 class APlanetChunkActor;
 class APlanetActor;
 
+
 /*@Class for creating in asynchronous way density field of a chunk, this class is FNonAbandonableTask because it cannot be stoped or paused*/
-class OURCRAFT_API FChunkDensityFieldGenerationAsyncTask : public FNonAbandonableTask {
+class OURCRAFT_API FGenerationAsyncTask : public FNonAbandonableTask {
 
 public:
 
-	APlanetChunkActor* PlanetChunk = nullptr;
-	
+	FGenerationTaskWork* WorkDelegate = nullptr;
+	FGenerationTaskComplete* CallBackDelegate = nullptr;
+
 private:
 	
-	FDensityFieldGenerationTaskComplete* EndEventCallBack = nullptr;
+	FGenerationAsyncResult* ResultData = nullptr;
 	
 public:
 
-	FChunkDensityFieldGenerationAsyncTask(APlanetChunkActor* TargetChunk, FDensityFieldGenerationTaskComplete* CallBack = nullptr);
-
-	FORCEINLINE TStatId GetStatId() const;
-	void DoWork();
-	
-};
-
-/*@Class for creating in asynchronous way mesh data of a chunk, this class is FNonAbandonableTask because it cannot be stoped or paused*/
-class OURCRAFT_API FChunkMeshDataGenerationAsyncTask : public FNonAbandonableTask {
-
-public:
-
-	APlanetChunkActor* PlanetChunk = nullptr;
-
-private:
-
-	FMeshData MeshData;
-	FMeshDataGenerationTaskComplete* EndEventCallBack = nullptr;
-
-public:
-
-	FChunkMeshDataGenerationAsyncTask(APlanetChunkActor* TargetChunk, FMeshDataGenerationTaskComplete* CallBack = nullptr);
+	FGenerationAsyncTask(FGenerationTaskWork* Work, FGenerationTaskComplete* CallBack, FGenerationAsyncResult* ObjectForContainsResults);
 
 	FORCEINLINE TStatId GetStatId() const;
 	void DoWork();

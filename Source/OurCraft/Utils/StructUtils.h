@@ -9,9 +9,17 @@
 #include "StructUtils.generated.h"
 
 enum EItemType;
+class APlanetChunkActor;
+
+USTRUCT()
+struct FGenerationAsyncResult {
+	
+	GENERATED_BODY()
+	
+};
 
 USTRUCT(BlueprintType)
-struct FMeshData {
+struct FMeshDataResult : public FGenerationAsyncResult {
 	
 	GENERATED_BODY()
 
@@ -32,6 +40,12 @@ struct FMeshData {
 	
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FProcMeshTangent> Tangents;
+};
+
+USTRUCT()
+struct FNoiseDataResult : public FGenerationAsyncResult {
+	GENERATED_BODY()
+	
 };
 
 #pragma region Items Structs
