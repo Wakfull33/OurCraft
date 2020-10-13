@@ -58,11 +58,12 @@ void APlanetChunkActor::GenerateChunkAsync() {
 	FGenerationTaskWork* WorkDelegate = new FGenerationTaskWork();
 	FGenerationTaskComplete* CallBackDelegate = new FGenerationTaskComplete();
 
-	WorkDelegate->BindUObject(this, &APlanetChunkActor::GenerateDensityField);
-	WorkDelegate->BindUObject(this, &APlanetChunkActor::GenerateMeshData);
+	WorkDelegate->AddUObject(this, &APlanetChunkActor::GenerateMeshData);
+	WorkDelegate->AddUObject(this, &APlanetChunkActor::GenerateDensityField);
+	
+	CallBackDelegate->AddUObject(this, &APlanetChunkActor::FinishGenerateMeshDataAsync);
+	CallBackDelegate->AddUObject(this, &APlanetChunkActor::FinishGenerateDensityFieldAsync);
 
-	CallBackDelegate->BindUObject(this, &APlanetChunkActor::FinishGenerateDensityFieldAsync);
-	CallBackDelegate->BindUObject(this, &APlanetChunkActor::FinishGenerateMeshDataAsync);
 
 	FMeshDataResult* TaskResultToFill = new FMeshDataResult();
 	
@@ -76,9 +77,9 @@ void APlanetChunkActor::GenerateDensityFieldAsync() {
 	FGenerationTaskWork* WorkDelegate = new FGenerationTaskWork();
 	FGenerationTaskComplete* CallBackDelegate = new FGenerationTaskComplete();
 
-	WorkDelegate->BindUObject(this, &APlanetChunkActor::GenerateDensityField);
-	CallBackDelegate->BindUObject(this, &APlanetChunkActor::FinishGenerateDensityFieldAsync);
-
+	WorkDelegate->AddUObject(this, &APlanetChunkActor::GenerateDensityField);
+	CallBackDelegate->AddUObject(this, &APlanetChunkActor::FinishGenerateDensityFieldAsync);
+	
 	FNoiseDataResult* TaskResultToFill = new FNoiseDataResult();
 
 	auto Task = new FAsyncTask<FGenerationAsyncTask>(WorkDelegate, CallBackDelegate, TaskResultToFill);
@@ -97,8 +98,8 @@ void APlanetChunkActor::GenerateMeshDataAsync() {
 	FGenerationTaskWork* WorkDelegate = new FGenerationTaskWork();
 	FGenerationTaskComplete* CallBackDelegate = new FGenerationTaskComplete();
 
-	WorkDelegate->BindUObject(this, &APlanetChunkActor::GenerateMeshData);
-	CallBackDelegate->BindUObject(this, &APlanetChunkActor::FinishGenerateMeshDataAsync);
+	WorkDelegate->AddUObject(this, &APlanetChunkActor::GenerateMeshData);
+	CallBackDelegate->AddUObject(this, &APlanetChunkActor::FinishGenerateMeshDataAsync);
 
 	FMeshDataResult* TaskResultToFill = new FMeshDataResult();
 
@@ -109,7 +110,6 @@ void APlanetChunkActor::GenerateMeshDataAsync() {
 
 
 void APlanetChunkActor::FinishGenerateMeshDataAsync(FGenerationAsyncResult* MeshData) {
-	UE_LOG(LogTemp, Warning, TEXT("Mesh Data generation finished for chunk X: %d, Y: %d, Z: %d"), ChunkXCoord, ChunkYCoord, ChunkZCoord);
 	//TODO
 }
 
@@ -137,7 +137,6 @@ void APlanetChunkActor::FinishGenerateMeshDataAsync(FGenerationAsyncResult* Mesh
 /**********************************************************************************************/
 
 void APlanetChunkActor::GenerateDensityField(FGenerationAsyncResult* NoiseData) {
-	UE_LOG(LogTemp, Warning, TEXT("Density field generation started for chunk X: %d, Y: %d, Z: %d"), ChunkXCoord, ChunkYCoord, ChunkZCoord);
 	DensityField.Empty();
 	DensityField.Reserve(FMath::Pow(ChunkSize, 3));
 	for (int x = 0 ; x < ChunkSize; x++) {
@@ -147,11 +146,9 @@ void APlanetChunkActor::GenerateDensityField(FGenerationAsyncResult* NoiseData) 
 			}
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Density field generation finished for chunk X: %d, Y: %d, Z: %d"), ChunkXCoord, ChunkYCoord, ChunkZCoord);
 }
 
 void APlanetChunkActor::GenerateMeshData(FGenerationAsyncResult* MeshData) {
-	
 	for (int x = 0; x < ChunkSize; x++) {
 		for (int y = 0; y < ChunkSize; y++) {
 			for (int z = 0; z < ChunkSize; z++) {

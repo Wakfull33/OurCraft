@@ -39,6 +39,12 @@ void APlanetActor::OnConstruction(const FTransform& Transform) {
 
 void APlanetActor::Generate() {
 
+	PlanetCenter = GetActorLocation() + Radius * 100;
+
+	const float ChunkCentimeterSize = ChunkSize * CellSize;
+	const float ChunkMeterSize = ChunkCentimeterSize * 0.01f;
+	NumberOfChunkSide = Radius * 2 / ChunkMeterSize;
+	
 	if (!IsPlanetRunningTasks()) {
 
 		for (auto Chunk : Chunks) {
@@ -47,7 +53,7 @@ void APlanetActor::Generate() {
 
 		Chunks.Empty();
 
-		const float ChunkCentimeterSize = ChunkSize * CellSize;
+		//const float ChunkCentimeterSize = ChunkSize * CellSize;
 
 		Chunks.Reserve(FMath::Pow(NumberOfChunkSide, 3.0f));
 
@@ -113,7 +119,7 @@ bool APlanetActor::IsChunkRunningTask(APlanetChunkActor* Chunk) const {
 		//TODO register invalid restore it
 	}
 
-	ChunkAlreadyRunning = AsyncTask.Value == nullptr;
+	ChunkAlreadyRunning = AsyncTask.Value != nullptr;
 	return ChunkAlreadyRunning;
 	
 }
@@ -128,6 +134,7 @@ void APlanetActor::RegisterTaskForChunkUnSafe(APlanetChunkActor* Chunk, FAsyncTa
 	}
 
 	AsyncTask.Value = Task;
+	Task->StartBackgroundTask();
 }
 
 void APlanetActor::RegisterTaskForChunkSafe(APlanetChunkActor* Chunk, FAsyncTask<FGenerationAsyncTask>* Task) {

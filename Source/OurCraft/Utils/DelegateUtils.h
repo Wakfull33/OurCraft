@@ -5,6 +5,6 @@
 #include "CoreMinimal.h"
 #include "StructUtils.h"
 
-DECLARE_DELEGATE_OneParam(FGenerationTaskWork, FGenerationAsyncResult*);
-DECLARE_DELEGATE_OneParam(FGenerationTaskComplete, FGenerationAsyncResult*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FGenerationTaskWork, FGenerationAsyncResult*);
+DECLARE_MULTICAST_DELEGATE_OneParam(FGenerationTaskComplete, FGenerationAsyncResult*);
 

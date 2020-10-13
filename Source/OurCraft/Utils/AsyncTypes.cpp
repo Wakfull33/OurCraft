@@ -13,11 +13,12 @@ void FGenerationAsyncTask::DoWork() {
 
 	if (WorkDelegate->IsBound()) {
 		//Executing async work
-		WorkDelegate->Execute(ResultData);
+		WorkDelegate->Broadcast(ResultData);
 	}
 	if (CallBackDelegate->IsBound()) {
 		//Work is complete, callback to GameThread
-		AsyncTask(ENamedThreads::GameThread, [this] {CallBackDelegate->Execute(ResultData); });
+		
+		AsyncTask(ENamedThreads::GameThread, [this] {CallBackDelegate->Broadcast(ResultData); });
 	}
 }
 
