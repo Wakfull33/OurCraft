@@ -31,6 +31,15 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Planet settings")
 	int NumberOfChunkSide;
+
+	UPROPERTY(VisibleAnywhere, Category = "Meshing Settings")
+	float IsoValue = 0.0f;
+	
+	UPROPERTY(EditAnywhere, Category = "Meshing Settings")
+	bool Planet;
+
+	UPROPERTY(EditAnywhere, Category = "Meshing Settings")
+	bool SmoothTerrain;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Planet chunks")
 	TArray<APlanetChunkActor*> Chunks;
