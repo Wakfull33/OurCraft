@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../Utils/StructUtils.h"
+#include "Engine/DataTable.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "Item.generated.h"
 
 UCLASS()
@@ -23,4 +27,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void OnConstruction(const FTransform& Transform) override;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FItemData ItemData;
+
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* StaticMeshComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	USphereComponent* SphereComponent;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
+	FDataTableRowHandle DataTable;
+
+	virtual void PickupItem(AActor* Actor);
 };

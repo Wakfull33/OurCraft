@@ -6,9 +6,9 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "ProceduralMeshComponent.h" 
 #include "Engine/DataTable.h"
+#include "EnumsUtils.h"
 #include "StructUtils.generated.h"
 
-enum EItemType;
 class APlanetChunkActor;
 
 USTRUCT()
@@ -58,23 +58,48 @@ struct FItemData : public FTableRowBase
 public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString ItemName = "Default Name";
+	FString Name = "Default Name";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString ItemDescription = "Default Description";
+	FString Description = "Default Description";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString ItemMeshPath = "";
+	UStaticMesh* StaticMesh;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString ItemIcon = "";
+	UTexture2D* Icon;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	int ItemValue = 0;
+	int Value = 0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString ItemType;
+	TEnumAsByte<EItemType> Type;
+
+	FItemData operator=(const FItemData& other) {
+		Name = other.Name;
+		Description = other.Description;
+		StaticMesh = other.StaticMesh;
+		Icon = other.Icon;
+		Value = other.Value;
+		Type = other.Type;
+
+		return *this;
+	}
 };
+
+USTRUCT(BlueprintType)
+struct FItemStack
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	FItemData ItemData;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int ItemCount;
+};
+
 
 #pragma endregion 
 

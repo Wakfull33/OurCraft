@@ -45,10 +45,11 @@ UENUM(BlueprintType)
 enum EItemType
 {
 	IT_ITEM			UMETA(DisplayName = "Item"),
-	IT_CONSUMMABLE	UMETA(DisplayName = "Consummable"),
+	IT_CONSUMABLE	UMETA(DisplayName = "Consummable"),
 	IT_TOOL			UMETA(DisplayName = "Tool"),
 	IT_WEAPON		UMETA(DisplayName = "Weapon"),
-	IT_ARMOR		UMETA(DisplayName = "Armor")
+	IT_ARMOR		UMETA(DisplayName = "Armor"),
+	IT_BLOCK		UMETA(DisplayName = "Block")
 };
 
 UENUM(BlueprintType)
@@ -60,7 +61,7 @@ enum EWeaponType
 };
 
 UENUM(BlueprintType)
-enum ETType
+enum EToolType
 {
 	TT_PICKAXE	UMETA(DisplayName = "Pickaxe"),
 	TT_SHOVEL	UMETA(DisplayName = "Shovel"),
