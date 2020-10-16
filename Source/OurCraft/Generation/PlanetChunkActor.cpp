@@ -40,6 +40,7 @@ void APlanetChunkActor::InitialiseChunk(int X, int Y, int Z, int ChunkSideSize, 
 	ChunkSize = ChunkSideSize;
 	CellSize = VoxelSize;
 	PlanetOwner = ChunkPlanetOwner;
+	PlanetOrigin = PlanetOwner->GetActorLocation();
 }
 
 #pragma region Chunk Generation Async Methods
@@ -93,6 +94,7 @@ void APlanetChunkActor::StartGenerateDensityFieldAsync() {
 
 void APlanetChunkActor::FinishGenerateDensityFieldAsync(FGenerationAsyncResult* NoiseData) {
 	//TODO
+	
 }
 
 
@@ -116,7 +118,10 @@ void APlanetChunkActor::StartGenerateMeshDataFieldAsync() {
 }
 
 void APlanetChunkActor::FinishGenerateMeshDataAsync(FGenerationAsyncResult* MeshData) {
-	//TODO
+	if(MeshData != nullptr) {
+		CreateChunkMesh((FMeshDataResult*)MeshData);
+	}
+	PlanetOwner->ResetTaskForChunk(this);
 }
 
 /**********************************************************************************************/
@@ -147,7 +152,7 @@ void APlanetChunkActor::GenerateDensityField(FGenerationAsyncResult* NoiseData) 
 	DensityField.Empty();
 	DensityField.Reserve(FMath::Pow(ChunkSize, 3));
 	const FVector PlanetCenter = PlanetOwner->PlanetCenter;
-	const float PlanetRadius = PlanetOwner->Radius;
+	const float PlanetRadiusCM = PlanetOwner->Radius * 100.0f;
 	const bool Planet = PlanetOwner->Planet;
 	
 	for (int x = 0 ; x < ChunkSize; x++) {
@@ -156,7 +161,7 @@ void APlanetChunkActor::GenerateDensityField(FGenerationAsyncResult* NoiseData) 
 				float NoiseValue = 0.0f;
 				if (Planet) {
 					const float DistCellToPlanetCenter = FVector::Dist(PointToWorldPos(x, y, z, true), PlanetCenter);
-					NoiseValue = DistCellToPlanetCenter - PlanetRadius;
+					NoiseValue = DistCellToPlanetCenter - PlanetRadiusCM;
 				}
 				else {
 					NoiseValue = PointToWorldPos(x, y, z, true).Z > PlanetCenter.Z ? 1.0f : -1.0f;
@@ -177,9 +182,9 @@ void APlanetChunkActor::GenerateMeshData(FGenerationAsyncResult* MeshData) {
 
 		const float IsoValue = PlanetOwner->IsoValue;
 		
-		for (int x = 0; x < ChunkSize; x++) {
-			for (int y = 0; y < ChunkSize; y++) {
-				for (int z = 0; z < ChunkSize; z++) {
+		for (int x = 0; x < ChunkSize -1; x++) {
+			for (int y = 0; y < ChunkSize -1; y++) {
+				for (int z = 0; z < ChunkSize -1; z++) {
 					PolygoniseCell(x, y, z, IsoValue, (FMeshDataResult*)MeshData, Smooth);
 				}
 			}
@@ -193,8 +198,11 @@ void APlanetChunkActor::GenerateMeshData(FGenerationAsyncResult* MeshData) {
 
 void APlanetChunkActor::CreateChunkMesh(FMeshDataResult* MeshData) {
 	UE_LOG(LogTemp, Warning, TEXT("Create Mesh for chunk X: %d, Y: %d, Z: %d"), ChunkXCoord, ChunkYCoord, ChunkZCoord);
-
+	if (ProceduralMeshComponent != nullptr) {
+		ProceduralMeshComponent->CreateMeshSection(0, MeshData->Vertices, MeshData->Triangles, MeshData->Normals, MeshData->UVs, MeshData->VertexColors, MeshData->Tangents, false);
+	}
 	delete MeshData;
+	MeshData = nullptr;
 }
 /**********************************************************************************************/
 /**********************************************************************************************/
@@ -357,13 +365,31 @@ void APlanetChunkActor::GetCellPointsValues(int x, int y, int z, bool WorldPos, 
 
 
 float APlanetChunkActor::GetPointValue(int x, int y, int z) {
-	return DensityField[x * FMath::Square(ChunkSize) + y * ChunkSize + z];
+	float Value = 1.0f;
+	const int Index = x * FMath::Square(ChunkSize) + y * ChunkSize + z;
+	if (DensityField.IsValidIndex(Index)) {
+		Value = DensityField[Index];
+	}
+	else {
+		//TODO temporary, need redo
+		if (PlanetOwner->Planet) {
+			const float PlanetRadiusCM = PlanetOwner->Radius * 100.0f;
+			const float DistCellToPlanetCenter = FVector::Dist(PointToWorldPos(x, y, z, true), PlanetOwner->PlanetCenter);
+			Value = DistCellToPlanetCenter - PlanetRadiusCM;
+		}
+		else {
+			Value = PointToWorldPos(x, y, z, true).Z > PlanetOwner->PlanetCenter.Z ? 1.0f : -1.0f;
+		}
+	}
+	return Value;
 }
 
 FVector APlanetChunkActor::PointToWorldPos(int x, int y, int z, bool WorldPos) const {
 	FVector PointPos = FVector(x * CellSize, y * CellSize, z * CellSize);
 	if (WorldPos) {
-		PointPos += GetActorLocation();
+		const float ChunkCentimeterSize = ChunkSize * CellSize;
+		const FVector Offset = PlanetOrigin + FVector(ChunkXCoord * ChunkCentimeterSize, ChunkYCoord * ChunkCentimeterSize, ChunkZCoord * ChunkCentimeterSize);
+		PointPos += Offset;
 	}
 	return PointPos;
 }

@@ -36,7 +36,7 @@ public:
 	float IsoValue = 0.0f;
 	
 	UPROPERTY(EditAnywhere, Category = "Meshing Settings")
-	bool Planet;
+	bool Planet = true;
 
 	UPROPERTY(EditAnywhere, Category = "Meshing Settings")
 	bool SmoothTerrain;
@@ -62,11 +62,18 @@ public:
 	UFUNCTION(CallInEditor, Category = "Actions")
 	void GenerateNewSeed();
 
+	UFUNCTION(CallInEditor, Category = "Actions")
+	void DrawDebugPlanet();
+
+	
 	bool IsPlanetRunningTasks() const;
 	bool IsChunkRunningTask(APlanetChunkActor* Chunk) const;
 	void RegisterTaskForChunkUnSafe(APlanetChunkActor* Chunk, FAsyncTask<FGenerationAsyncTask>* Task);
 	void RegisterTaskForChunkSafe(APlanetChunkActor* Chunk, FAsyncTask<FGenerationAsyncTask>* Task);
-	
+
+	void ResetTaskForChunk(APlanetChunkActor* Chunk);
+
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

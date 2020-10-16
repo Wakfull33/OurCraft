@@ -3,6 +3,7 @@
 
 #include "PlanetActor.h"
 #include "PlanetChunkActor.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 APlanetActor::APlanetActor()
@@ -10,6 +11,11 @@ APlanetActor::APlanetActor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	USceneComponent* NewRootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	NewRootComponent->Mobility = EComponentMobility::Movable;
+	NewRootComponent->SetWorldTransform(GetActorTransform());
+	SetRootComponent(NewRootComponent);
+	
 }
 
 // Called when the game starts or when spawned
@@ -33,7 +39,7 @@ void APlanetActor::OnConstruction(const FTransform& Transform) {
 	const float ChunkCentimeterSize = ChunkSize * CellSize;
 	const float ChunkMeterSize = ChunkCentimeterSize * 0.01f;
 	NumberOfChunkSide = Radius * 2 / ChunkMeterSize;
-
+	NumberOfChunkSide++;
 }
 
 
@@ -44,7 +50,8 @@ void APlanetActor::Generate() {
 	const float ChunkCentimeterSize = ChunkSize * CellSize;
 	const float ChunkMeterSize = ChunkCentimeterSize * 0.01f;
 	NumberOfChunkSide = Radius * 2 / ChunkMeterSize;
-	
+	NumberOfChunkSide++;
+
 	if (!IsPlanetRunningTasks()) {
 
 		for (auto Chunk : Chunks) {
@@ -137,6 +144,14 @@ void APlanetActor::RegisterTaskForChunkUnSafe(APlanetChunkActor* Chunk, FAsyncTa
 	Task->StartBackgroundTask();
 }
 
+
+void APlanetActor::ResetTaskForChunk(APlanetChunkActor* Chunk) {
+	const int Index = Chunk->ChunkXCoord * FMath::Square(NumberOfChunkSide) + Chunk->ChunkYCoord * NumberOfChunkSide + Chunk->ChunkZCoord;
+	auto& AsyncTask = AsyncTaskRegistry[Index];
+	AsyncTask.Value = nullptr;
+}
+
+
 void APlanetActor::RegisterTaskForChunkSafe(APlanetChunkActor* Chunk, FAsyncTask<FGenerationAsyncTask>* Task) {
 
 	if (Chunk != nullptr && Task != nullptr) {
@@ -144,4 +159,8 @@ void APlanetActor::RegisterTaskForChunkSafe(APlanetChunkActor* Chunk, FAsyncTask
 			RegisterTaskForChunkUnSafe(Chunk, Task);
 		}
 	}
+}
+
+void APlanetActor::DrawDebugPlanet() {
+	DrawDebugSphere(GetWorld(), PlanetCenter, Radius * 100.0f, 50, FColor::Red, false, 20.0f, 0.0f, 10.0f);
 }

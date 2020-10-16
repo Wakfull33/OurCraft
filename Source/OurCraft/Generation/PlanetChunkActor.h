@@ -41,6 +41,9 @@ public:
 
 	UPROPERTY()
 	UProceduralMeshComponent* ProceduralMeshComponent;
+
+	UPROPERTY()
+	FVector PlanetOrigin;
 	
 private:
 
@@ -52,7 +55,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void InitialiseChunk(int X, int Y, int Z, int ChunkSideSize, float VoxelSize, APlanetActor* ChunkPlanetOwner);
-
 
 	void GenerateChunkAsync();
 	void GenerateDensityFieldAsync();
