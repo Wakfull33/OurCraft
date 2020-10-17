@@ -55,7 +55,9 @@ void APlanetActor::Generate() {
 	if (!IsPlanetRunningTasks()) {
 
 		for (auto Chunk : Chunks) {
-			GetWorld()->DestroyActor(Chunk);
+			if (Chunk != nullptr) {
+				GetWorld()->DestroyActor(Chunk);
+			}
 		}
 
 		Chunks.Empty();

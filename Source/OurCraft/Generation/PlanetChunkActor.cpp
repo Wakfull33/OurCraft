@@ -154,10 +154,12 @@ void APlanetChunkActor::GenerateDensityField(FGenerationAsyncResult* NoiseData) 
 	const FVector PlanetCenter = PlanetOwner->PlanetCenter;
 	const float PlanetRadiusCM = PlanetOwner->Radius * 100.0f;
 	const bool Planet = PlanetOwner->Planet;
+
+	const int Limit = ChunkSize + 1;//+1 on chunksize because we add the first of the next chunk in this field so when generating the mesh we dont go out of the array
 	
-	for (int x = 0 ; x < ChunkSize; x++) {
-		for (int y = 0; y < ChunkSize; y++) {
-			for (int z = 0; z < ChunkSize; z++) {
+	for (int x = 0 ; x < Limit; x++) {
+		for (int y = 0; y < Limit; y++) {
+			for (int z = 0; z < Limit; z++) {
 				float NoiseValue = 0.0f;
 				if (Planet) {
 					const float DistCellToPlanetCenter = FVector::Dist(PointToWorldPos(x, y, z, true), PlanetCenter);
@@ -166,6 +168,8 @@ void APlanetChunkActor::GenerateDensityField(FGenerationAsyncResult* NoiseData) 
 				else {
 					NoiseValue = PointToWorldPos(x, y, z, true).Z > PlanetCenter.Z ? 1.0f : -1.0f;
 				}
+
+				
 				DensityField.Add(NoiseValue);
 			}
 		}
@@ -175,16 +179,16 @@ void APlanetChunkActor::GenerateDensityField(FGenerationAsyncResult* NoiseData) 
 
 void APlanetChunkActor::GenerateMeshData(FGenerationAsyncResult* MeshData) {
 
-	const int NumberOfElementsInChunk = FMath::Pow(ChunkSize, 3.0f);
+	const int NumberOfElementsInChunk = FMath::Pow(ChunkSize + 1, 3.0f);
 	const bool Smooth = PlanetOwner->SmoothTerrain;
 	
 	if (DensityField.Num() == NumberOfElementsInChunk) {
 
 		const float IsoValue = PlanetOwner->IsoValue;
 		
-		for (int x = 0; x < ChunkSize -1; x++) {
-			for (int y = 0; y < ChunkSize -1; y++) {
-				for (int z = 0; z < ChunkSize -1; z++) {
+		for (int x = 0; x < ChunkSize; x++) {
+			for (int y = 0; y < ChunkSize; y++) {
+				for (int z = 0; z < ChunkSize; z++) {
 					PolygoniseCell(x, y, z, IsoValue, (FMeshDataResult*)MeshData, Smooth);
 				}
 			}
@@ -197,7 +201,7 @@ void APlanetChunkActor::GenerateMeshData(FGenerationAsyncResult* MeshData) {
 }
 
 void APlanetChunkActor::CreateChunkMesh(FMeshDataResult* MeshData) {
-	UE_LOG(LogTemp, Warning, TEXT("Create Mesh for chunk X: %d, Y: %d, Z: %d"), ChunkXCoord, ChunkYCoord, ChunkZCoord);
+	//UE_LOG(LogTemp, Warning, TEXT("Create Mesh for chunk X: %d, Y: %d, Z: %d"), ChunkXCoord, ChunkYCoord, ChunkZCoord);
 	if (ProceduralMeshComponent != nullptr) {
 		ProceduralMeshComponent->CreateMeshSection(0, MeshData->Vertices, MeshData->Triangles, MeshData->Normals, MeshData->UVs, MeshData->VertexColors, MeshData->Tangents, false);
 	}
@@ -365,23 +369,8 @@ void APlanetChunkActor::GetCellPointsValues(int x, int y, int z, bool WorldPos, 
 
 
 float APlanetChunkActor::GetPointValue(int x, int y, int z) {
-	float Value = 1.0f;
-	const int Index = x * FMath::Square(ChunkSize) + y * ChunkSize + z;
-	if (DensityField.IsValidIndex(Index)) {
-		Value = DensityField[Index];
-	}
-	else {
-		//TODO temporary, need redo
-		if (PlanetOwner->Planet) {
-			const float PlanetRadiusCM = PlanetOwner->Radius * 100.0f;
-			const float DistCellToPlanetCenter = FVector::Dist(PointToWorldPos(x, y, z, true), PlanetOwner->PlanetCenter);
-			Value = DistCellToPlanetCenter - PlanetRadiusCM;
-		}
-		else {
-			Value = PointToWorldPos(x, y, z, true).Z > PlanetOwner->PlanetCenter.Z ? 1.0f : -1.0f;
-		}
-	}
-	return Value;
+	const int Limit = ChunkSize + 1;//+1 on chunksize because we added the first of the next chunk in this field so when generating the mesh we dont go out of the array
+	return DensityField[x * FMath::Square(Limit) + y * Limit + z];;
 }
 
 FVector APlanetChunkActor::PointToWorldPos(int x, int y, int z, bool WorldPos) const {
