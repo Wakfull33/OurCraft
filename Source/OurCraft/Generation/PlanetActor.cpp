@@ -56,6 +56,7 @@ void APlanetActor::Generate() {
 
 		for (auto Chunk : Chunks) {
 			if (Chunk != nullptr) {
+				Chunk->ProceduralMeshComponent->ClearAllMeshSections();
 				GetWorld()->DestroyActor(Chunk);
 			}
 		}
