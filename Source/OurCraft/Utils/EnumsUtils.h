@@ -77,4 +77,12 @@ enum EArmorType
 	AT_BOOTS		UMETA(DisplayName = "Boots")
 };
 
-#pragma endregion 
+#pragma endregion
+
+UENUM(BlueprintType)
+enum EGravityType
+{
+	GT_PLANET		UMETA(DisplayName = "Planet"),
+	GT_SPHERE		UMETA(DisplayName = "Sphere"),
+	GT_TILE			UMETA(DisplayName = "Tile")
+};

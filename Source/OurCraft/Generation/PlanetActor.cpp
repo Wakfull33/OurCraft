@@ -4,6 +4,7 @@
 #include "PlanetActor.h"
 #include "PlanetChunkActor.h"
 #include "DrawDebugHelpers.h"
+#include "../Characters/GravityAttractorComponent.h"
 
 // Sets default values
 APlanetActor::APlanetActor()
@@ -15,7 +16,9 @@ APlanetActor::APlanetActor()
 	NewRootComponent->Mobility = EComponentMobility::Movable;
 	NewRootComponent->SetWorldTransform(GetActorTransform());
 	SetRootComponent(NewRootComponent);
-	
+
+	// Add GravityAttractorComponent to simulate planet gravity
+	UGravityAttractorComponent* GravityAttractor = CreateDefaultSubobject<UGravityAttractorComponent>(TEXT("Gravity Attractor"));
 }
 
 // Called when the game starts or when spawned
