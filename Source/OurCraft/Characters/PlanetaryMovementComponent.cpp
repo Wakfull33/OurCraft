@@ -10,6 +10,7 @@
 #include "NavigationSystem.h"
 #include "DrawDebugHelpers.h"
 #include "GravitySetterComponent.h"
+#include "../Generation/PlanetActor.h"
 #include "AI/Navigation/PathFollowingAgentInterface.h"
 
 const float VERTICAL_SLOPE_NORMAL_Z = 0.001f; // Slope is vertical if Abs(Normal.Z) <= this threshold. Accounts for precision problems that sometimes angle normals slightly off horizontal for vertical surface.
@@ -70,19 +71,14 @@ FVector UPlanetaryMovementComponent::GetGravityDirection(bool bAvoidZeroGravity)
 	return FVector::ZeroVector;
 }
 
-void UPlanetaryMovementComponent::SetGravityDirection(UGravitySetterComponent* GravitySetter)
+void UPlanetaryMovementComponent::SetGravityDirection(FVector Gravity)
 {
-	FVector NewGravityDirection = FVector::ZeroVector;
-	
-	switch (GravitySetter->GravityType)
-	{
-		case EGravityType::GT_PLANET:
-		{
-			
-		}
-	}
-	
-	CustomGravityDirection = NewGravityDirection.GetSafeNormal();
+	if (BasicGravity)
+		CustomGravityDirection = FVector(0.0f, 0.0f, -9.8f);
+	else
+		CustomGravityDirection = Gravity.GetSafeNormal();
+	//UE_LOG(LogTemp, Warning, TEXT("Gravity: %s"), *Gravity.ToString())
+	DrawDebugDirectionalArrow(GetWorld(), GetOwner()->GetActorLocation(), GetOwner()->GetActorLocation() + Gravity * 100, 10, FColor::Red, false);
 }
 
 void UPlanetaryMovementComponent::PhysFlying(float deltaTime, int32 Iterations)
@@ -249,23 +245,11 @@ void UPlanetaryMovementComponent::PerformMovement(float DeltaSeconds)
 	// no movement if we can't move, or if currently doing physical simulation on UpdatedComponent
 	if (MovementMode == MOVE_None || UpdatedComponent->Mobility != EComponentMobility::Movable || UpdatedComponent->IsSimulatingPhysics())
 	{
-		if (!CharacterOwner->bClientUpdating && !CharacterOwner->bServerMoveIgnoreRootMotion)
-		{
-			// Consume root motion
-			if (CharacterOwner->IsPlayingRootMotion() && CharacterOwner->GetMesh())
-			{
-				TickCharacterPose(DeltaSeconds);
-				RootMotionParams.Clear();
-			}
-			if (CurrentRootMotion.HasActiveRootMotionSources())
-			{
-				CurrentRootMotion.Clear();
-			}
-		}
-		// Clear pending physics forces
-		ClearAccumulatedForces();
+
 		return;
 	}
+
+	UpdateComponentRotation(); //Needed ?
 
 	// Force floor update if we've moved outside of CharacterMovement since last update.
 	bForceNextFloorCheck |= (IsMovingOnGround() && UpdatedComponent->GetComponentLocation() != LastUpdateLocation);
@@ -280,7 +264,7 @@ void UPlanetaryMovementComponent::PerformMovement(float DeltaSeconds)
 		MaybeUpdateBasedMovement(DeltaSeconds);
 
 		OldVelocity = Velocity;
-		OldLocation = UpdatedComponent->GetComponentLocation();
+		OldLocation = CharacterOwner->GetActorLocation();
 
 		ApplyAccumulatedForces(DeltaSeconds);
 
@@ -368,7 +352,7 @@ void UPlanetaryMovementComponent::PerformMovement(float DeltaSeconds)
 		// Apply Root Motion rotation after movement is complete.
 		if (HasAnimRootMotion())
 		{
-			const FRotator OldActorRotation = UpdatedComponent->GetComponentRotation();
+			const FRotator OldActorRotation = CharacterOwner->GetActorRotation();
 			const FRotator RootMotionRotation = RootMotionParams.GetRootMotionTransform().GetRotation().Rotator();
 			if (!RootMotionRotation.IsNearlyZero())
 			{
@@ -1470,6 +1454,8 @@ void UPlanetaryMovementComponent::UpdateBasedMovement(float DeltaSeconds)
 				FinalQuat = CharacterOwner->GetActorQuat();
 
 				// Pipe through ControlRotation, to affect camera.
+				UE_LOG(LogTemp, Warning, TEXT("Controller Check: %s"), CharacterOwner->Controller != NULL ? TEXT("YES") : TEXT("NO"))
+
 				if (CharacterOwner->Controller)
 				{
 					const FQuat PawnDeltaRotation = FinalQuat * PawnOldQuat.Inverse();
@@ -1700,6 +1686,8 @@ void UPlanetaryMovementComponent::UpdateBasedRotation(FRotator& FinalRotation, c
 	AController* Controller = CharacterOwner ? CharacterOwner->Controller : NULL;
 	float ControllerRoll = 0.0f;
 
+	UE_LOG(LogTemp, Warning, TEXT("Controller Check: %s"), Controller != NULL ? TEXT("YES") : TEXT("NO"))
+
 	if (Controller && !bIgnoreBaseRotation)
 	{
 		const FRotator ControllerRot = Controller->GetControlRotation();
@@ -1715,7 +1703,7 @@ void UPlanetaryMovementComponent::UpdateBasedRotation(FRotator& FinalRotation, c
 		{
 			FinalRotation.Roll = CharacterOwner->GetActorRotation().Roll;
 			FRotator NewRotation = Controller->GetControlRotation();
-			NewRotation.Roll = ControllerRoll;
+			NewRotation.Roll = ControllerRoll;			
 			Controller->SetControlRotation(NewRotation);
 		}
 	}
@@ -2700,6 +2688,7 @@ void UPlanetaryMovementComponent::UpdateComponentRotation()
 {
 	if (!UpdatedComponent)
 	{
+		//DrawDebugDirectionalArrow(GetWorld(), CharacterOwner->GetActorLocation(), CharacterOwner->GetActorLocation() + (100 * GetComponentDesiredAxisZ()), 5, FColor::Green, false);
 		return;
 	}
 
@@ -2713,6 +2702,8 @@ void UPlanetaryMovementComponent::UpdateComponentRotation()
 
 	// Take desired Z rotation axis of capsule, try to keep current X rotation axis of capsule.
 	const FMatrix RotationMatrix = FRotationMatrix::MakeFromZX(DesiredCapsuleUp, GetCapsuleAxisX());
+
+	//DrawDebugDirectionalArrow(GetWorld(), CharacterOwner->GetActorLocation(), CharacterOwner->GetActorLocation() + (100 * RotationMatrix.Rotator().Vector()), 5, FColor::Red, false);
 
 	// Intentionally not using MoveUpdatedComponent to bypass constraints.
 	UpdatedComponent->MoveComponent(FVector::ZeroVector, RotationMatrix.Rotator(), true);

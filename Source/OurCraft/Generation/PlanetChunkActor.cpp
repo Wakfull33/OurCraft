@@ -203,7 +203,7 @@ void APlanetChunkActor::GenerateMeshData(FGenerationAsyncResult* MeshData) {
 void APlanetChunkActor::CreateChunkMesh(FMeshDataResult* MeshData) {
 	//UE_LOG(LogTemp, Warning, TEXT("Create Mesh for chunk X: %d, Y: %d, Z: %d"), ChunkXCoord, ChunkYCoord, ChunkZCoord);
 	if (ProceduralMeshComponent != nullptr) {
-		ProceduralMeshComponent->CreateMeshSection(0, MeshData->Vertices, MeshData->Triangles, MeshData->Normals, MeshData->UVs, MeshData->VertexColors, MeshData->Tangents, false);
+		ProceduralMeshComponent->CreateMeshSection(0, MeshData->Vertices, MeshData->Triangles, MeshData->Normals, MeshData->UVs, MeshData->VertexColors, MeshData->Tangents, true);
 	}
 	delete MeshData;
 	MeshData = nullptr;

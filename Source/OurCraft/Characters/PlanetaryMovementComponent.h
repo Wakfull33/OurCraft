@@ -6,6 +6,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PlanetaryMovementComponent.generated.h"
 
+class UGravitySetterComponent;
+
 // Custom gravity movement component which moves provides directional gravity movement
 UCLASS()
 class OURCRAFT_API UPlanetaryMovementComponent : public UCharacterMovementComponent
@@ -51,9 +53,8 @@ public:
 	// @note It can be influenced by GravityScale.
 	// @param NewGravityDirection - New gravity direction, assumes it isn't normalize
 	UFUNCTION(Category = "Pawn|Components|CharacterMovement", BlueprintCallable)
-		virtual void SetGravityDirection(class UGravitySetterComponent* GravitySetter);
+		virtual void SetGravityDirection(FVector Gravity);
 	
-protected:
 	// Return the normalized direction of the current gravity.
 	// @note Could return zero gravity.
 	// 
@@ -61,6 +62,9 @@ protected:
 	// @return Normalized direction of current gravity
 	UFUNCTION(Category = "Pawn|Components|CharacterMovement", BlueprintCallable)
 		virtual FVector GetGravityDirection(bool bAvoidZeroGravity = false) const;
+
+
+protected:
 
 
 
@@ -102,6 +106,10 @@ private:
 	bool bFallingRemovesSpeedZ;
 	bool bIgnoreBaseRollMove;
 
-	UPROPERTY()
-		FVector CustomGravityDirection = FVector::ZeroVector;
+	FVector CalculateGravity();
+	FVector CustomGravityDirection = FVector::ZeroVector;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool BasicGravity = false;
 };

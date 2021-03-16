@@ -8,6 +8,7 @@
 #include "MainCharacter.generated.h"
 
 class UGravityActorComponent;
+class UGravitySetterComponent;
 class UPlanetaryMovementComponent;
 
 UCLASS(config = Game)
@@ -37,7 +38,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Gravity)
 	UGravityActorComponent* GravityActorComponent;
 
+	UFUNCTION()
+	void SetupGravity(UGravitySetterComponent* GravitySetter);
+
+
+
 	TArray<FItemStack> Inventory;
+
 
 protected:
 
@@ -47,11 +54,19 @@ protected:
 	/** Called for side to side input */
 	void MoveRight(float Value);
 
+	/** Called for controller yaw input */
+	void Turn(float Value);
+
+	/** Called for controller pitch */
+	void LookUp(float Value);
+
 	/** Handler for when a touch input begins. */
 	void TouchStarted(ETouchIndex::Type FingerIndex, FVector Location);
 
 	/** Handler for when a touch input stops. */
 	void TouchStopped(ETouchIndex::Type FingerIndex, FVector Location);
+
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	// APawn interface
@@ -65,5 +80,18 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	FORCEINLINE class UInventorySystemComponent* GetInventorySystem() const { return InventorySystemComponent; }
+
+	FORCEINLINE class UInteractionSystemComponent* GetInteractionSystem() const { return InteractionSystemComponent; }
+
 	UPlanetaryMovementComponent* GetPlanetaryMovementComponent() const;
+
+	UGravitySetterComponent* GravitySetterComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UInventorySystemComponent* InventorySystemComponent = nullptr;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	class UInteractionSystemComponent* InteractionSystemComponent = nullptr;
+
 };

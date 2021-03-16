@@ -79,10 +79,11 @@ enum EArmorType
 
 #pragma endregion
 
-UENUM(BlueprintType)
+UENUM()
 enum EGravityType
 {
 	GT_PLANET		UMETA(DisplayName = "Planet"),
 	GT_SPHERE		UMETA(DisplayName = "Sphere"),
-	GT_TILE			UMETA(DisplayName = "Tile")
+	GT_TILE			UMETA(DisplayName = "Tile"),
+	GT_NONE			UMETA(DisplayName = "None")
 };

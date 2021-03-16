@@ -8,7 +8,7 @@ public class OurCraft : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent" });
+		PublicDependencyModuleNames.AddRange(new string[] { "AssetRegistry", "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent", "SlateCore" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

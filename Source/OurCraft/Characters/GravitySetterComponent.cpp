@@ -44,6 +44,7 @@ void UGravitySetterComponent::BeginPlay()
 
 	if(ShapeComponent)
 	{
+	    
 		ShapeComponent->OnComponentBeginOverlap.AddDynamic(this, &UGravitySetterComponent::OnGravitySetterComponentOverlapBegin);
 		ShapeComponent->OnComponentEndOverlap.AddDynamic(this, &UGravitySetterComponent::OnGravitySetterComponentOverlapEnd);
 	}
@@ -65,17 +66,22 @@ void UGravitySetterComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	// ...
 }
 
-void OnGravitySetterComponentOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void UGravitySetterComponent::OnGravitySetterComponentOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AMainCharacter* Character = Cast<AMainCharacter>(OtherActor);
 
 	if(Character != nullptr)
 	{
-		Character->GetPlanetaryMovementComponent()->SetGravityDirection(this);
+		Character->SetupGravity(this);
+		UE_LOG(LogTemp, Warning, TEXT("[%s] Overlapped: %s    UpVector: %s"), *GetName(), *GetOwner()->GetName(), *GetOwner()->GetActorUpVector().ToString())
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Unable to cast MainCharacter"))
 	}
 }
 
-void OnGravitySetterComponentOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void  UGravitySetterComponent::OnGravitySetterComponentOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	
 }

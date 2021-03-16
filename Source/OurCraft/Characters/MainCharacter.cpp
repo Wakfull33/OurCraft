@@ -9,7 +9,13 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GravityActorComponent.h"
+#include "GravitySetterComponent.h"
 #include "PlanetaryMovementComponent.h"
+#include "../Generation/PlanetActor.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "DrawDebugHelpers.h"
+#include "InventorySystemComponent.h"
+#include "InteractionSystemComponent.h"
 
 
 AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
@@ -49,7 +55,9 @@ AMainCharacter::AMainCharacter(const FObjectInitializer& ObjectInitializer)
 
 	//Adding Gravity Actor Component
 	//GravityActorComponent = CreateDefaultSubobject<UGravityActorComponent>(TEXT("Gravity Actor"));
-	
+
+	InventorySystemComponent = CreateDefaultSubobject<UInventorySystemComponent>(TEXT("Inventory System"));
+	InteractionSystemComponent = CreateDefaultSubobject<UInteractionSystemComponent>(TEXT("Interaction System"));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -68,8 +76,8 @@ void AMainCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInpu
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("Turn", this, &AMainCharacter::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &AMainCharacter::LookUp);
 
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AMainCharacter::TouchStarted);
@@ -92,17 +100,65 @@ void AMainCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locatio
 	StopJumping();
 }
 
+void AMainCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	FVector Gravity(FVector::ZeroVector);
+
+
+	if (GravitySetterComponent != nullptr) {
+		//UE_LOG(LogTemp, Warning, TEXT("[o] GravityComponent:  Owner: %s    GravityType: %s"), *GravitySetterComponent->GetOwner()->GetName(), *UEnum::GetValueAsString<EGravityType>(GravitySetterComponent->GravityType.GetValue()))
+
+		switch (GravitySetterComponent->GravityType) {
+			case GT_SPHERE: {
+				Gravity = (GravitySetterComponent->GetOwner()->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+				break;
+			}
+			case GT_PLANET: {
+				Gravity = ((Cast<APlanetActor>(GravitySetterComponent->GetOwner()))->PlanetCenter - GetActorLocation()).GetSafeNormal();
+				DrawDebugPoint(GetWorld(), (Cast<APlanetActor>(GravitySetterComponent->GetOwner()))->PlanetCenter, 100.f, FColor::Red);
+				break;
+			}
+			case GT_TILE: {
+				Gravity = (-GravitySetterComponent->GetOwner()->GetActorUpVector().GetSafeNormal());
+				break;
+			}
+		}
+
+		GetPlanetaryMovementComponent()->SetGravityDirection(UKismetMathLibrary::VInterpTo(GetPlanetaryMovementComponent()->GetGravityDirection(false), Gravity, DeltaSeconds, 5.0f));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("GravitySetterComponent not found !"))
+	}
+
+	//Handle Camera orientation
+	// CameraBoom->AddRelativeRotation(FRotator(GetInputAxisValue("LookUp") * -1, 0.0f, 0.0f));
+	// AddActorLocalRotation(FRotator(0.0f, GetInputAxisValue("Turn"), 0.0f));
+
+}
+
+void AMainCharacter::SetupGravity(UGravitySetterComponent* GravitySetter)
+{
+	GravitySetterComponent = GravitySetter;
+}
+
 void AMainCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
+		//const FRotator YawRotation(0, Rotation.Yaw, 0);
+		const FRotator YawRotation(GetActorRotation().Pitch, Rotation.Yaw, GetActorRotation().Roll);
+		
 		// get forward vector
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		AddMovementInput(Direction, Value);
+		//AddMovementInput(GetActorForwardVector(), Value);
+
+		DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + (100 * Direction), 10, FColor::Green, false, 30);
+		// UEngine().AddOnScreenDebugMessage(0, 1, FColor::Blue, FString::Printf(TEXT("Length: %f"), Direction.Size()));
 	}
 }
 
@@ -116,7 +172,25 @@ void AMainCharacter::MoveRight(float Value)
 
 		// get right vector 
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
 		// add movement in that direction
-		AddMovementInput(Direction, Value);
+		//AddMovementInput(Direction, Value);
+		AddMovementInput(GetActorRightVector(), Value);
+	}
+}
+
+void AMainCharacter::Turn(float Value)
+{
+	if((Controller != NULL) && (Value != 0.0f))
+	{
+		AddControllerYawInput(Value);
+	}
+}
+
+void AMainCharacter::LookUp(float Value)
+{
+	if((Controller != NULL) && (Value != 0.0f))
+	{
+		AddControllerPitchInput(Value);
 	}
 }

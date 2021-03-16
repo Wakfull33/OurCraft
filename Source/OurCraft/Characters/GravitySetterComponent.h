@@ -22,7 +22,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ShapeCollision")
 	UShapeComponent* ShapeComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ShapeCollision")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ShapeCollision")
 	TEnumAsByte<EGravityType> GravityType;
 	
 protected:

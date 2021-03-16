@@ -61,7 +61,7 @@ public:
 	FString Name = "Default Name";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FString Description = "Default Description";
+	FString Description = "";
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	UStaticMesh* StaticMesh;
@@ -73,17 +73,27 @@ public:
 	int Value = 0;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int MaxStack = 1;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	TEnumAsByte<EItemType> Type;
 
-	FItemData operator=(const FItemData& other) {
+	FORCEINLINE FItemData operator=(const FItemData& other) 
+	{
 		Name = other.Name;
 		Description = other.Description;
 		StaticMesh = other.StaticMesh;
 		Icon = other.Icon;
 		Value = other.Value;
+		MaxStack = other.MaxStack;
 		Type = other.Type;
 
 		return *this;
+	}
+
+	FORCEINLINE bool operator==(const FItemData& Other) const
+	{
+		return (Name == Other.Name && Description == Other.Description && StaticMesh == Other.StaticMesh &&	Icon == Other.Icon && Value == Other.Value && Type == Other.Type && MaxStack == Other.MaxStack);
 	}
 };
 
@@ -98,15 +108,60 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	int ItemCount;
+
+	FORCEINLINE bool operator== (const FItemStack& Other) const
+	{
+		return ItemData == Other.ItemData;
+	}
+
+	FItemStack(){};
+
+	FItemStack(const FItemData& _ItemData, int _Count) {
+		ItemData = _ItemData;
+		ItemCount = _Count;
+	};
 };
 
+USTRUCT(BlueprintType)
+struct FWeaponData : public FItemData
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	float WeaponDamage;
+};
 
 #pragma endregion 
+
+#pragma region Interactions Structs
+
+USTRUCT(BlueprintType)
+struct FInteractionDetails
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture2D* InteractionIcon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString InteractionName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FLinearColor InteractionNameColor = FLinearColor(0.43f, 0.43f, 0.43f, 1.0f);
+};
+
+#pragma endregion
 
 UCLASS()
 class OURCRAFT_API UStructUtils : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+
+public:
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "Equal FItemStack", CompactNodeTitle = "==", Keywords = "== equals"), Category = "Math")
+	static bool EqualEqual_FItemStackFItemStack(const FItemStack& item1, const FItemStack& item2);
 	
 };
 

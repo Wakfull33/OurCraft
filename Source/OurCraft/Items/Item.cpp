@@ -2,6 +2,10 @@
 
 
 #include "Item.h"
+#include "AssetRegistryModule.h"
+#include "../UI/InteractionDataAsset.h"
+#include "../Characters/InventorySystemComponent.h"
+#include "../Characters/InteractionSystemComponent.h"
 
 // Sets default values
 AItem::AItem()
@@ -10,10 +14,6 @@ AItem::AItem()
 	PrimaryActorTick.bCanEverTick = true;
 
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
-	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereCollision"));
-
-	SphereComponent->SetRelativeLocation(FVector::ZeroVector);
-	SphereComponent->SetSphereRadius(200);
 }
 
 // Called when the game starts or when spawned
@@ -36,11 +36,38 @@ void AItem::OnConstruction(const FTransform& Transform)
 	{
 		FItemData Data = *DataTable.GetRow<FItemData>("");
 		StaticMeshComponent->SetStaticMesh(Data.StaticMesh);
-		ItemData = Data;
+		ItemStack = { Data, 1 };
 	}
 }
 
-void AItem::PickupItem(AActor* Actor)
+void AItem::Interact_Implementation(AActor* Other)
 {
-	UE_LOG(LogTemp, Warning, TEXT("BasicPickup from %s triggered by: %s"), *GetName(), *Actor->GetName())
+	bool IsPickedUp = false;
+
+	for (UActorComponent* Component : Other->GetComponents())
+	{
+		if (Component && Component->GetClass() == UInventorySystemComponent::StaticClass())
+		{
+			IsPickedUp = Cast<UInventorySystemComponent>(Component)->AddItemStack(ItemStack);
+		}
+		if (IsPickedUp) {
+			if (Component && Component->GetClass() == UInteractionSystemComponent::StaticClass())
+			{
+				Cast<UInteractionSystemComponent>(Component)->RemoveObject(this);
+			}
+			Destroy();
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s Interact With %s"), *Other->GetName(), *GetName())
+}
+
+FInteractionDetails AItem::GetInteractionDetails_Implementation() 
+{
+	FInteractionDetails InteractionDetails;
+
+	InteractionDetails.InteractionIcon = ItemStack.ItemData.Icon;
+	InteractionDetails.InteractionName = ItemStack.ItemData.Name;
+
+	return InteractionDetails;
 }

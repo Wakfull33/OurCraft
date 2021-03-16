@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../Utils/StructUtils.h"
+#include "../Utils/InteractionInterface.h"
 #include "Engine/DataTable.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SphereComponent.h"
 #include "Item.generated.h"
 
 UCLASS()
-class OURCRAFT_API AItem : public AActor
+class OURCRAFT_API AItem : public AActor, public IInteractionInterface
 {
 	GENERATED_BODY()
 	
@@ -30,7 +31,7 @@ public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	FItemData ItemData;
+	FItemStack ItemStack;
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* StaticMeshComponent;
@@ -40,6 +41,8 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Meta = (ExposeOnSpawn = true))
 	FDataTableRowHandle DataTable;
+	
+	void Interact_Implementation(AActor* Other) override;
 
-	virtual void PickupItem(AActor* Actor);
+	FInteractionDetails GetInteractionDetails_Implementation() override;
 };
