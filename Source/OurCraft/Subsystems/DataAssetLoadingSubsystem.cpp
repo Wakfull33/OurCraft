@@ -2,8 +2,8 @@
 
 
 #include "DataAssetLoadingSubsystem.h"
-#include "UI/InteractionDataAsset.h"
-#include "UI/InventoryDataAsset.h"
+#include "../UI/InteractionDataAsset.h"
+#include "../UI/InventoryDataAsset.h"
 
 void UDataAssetLoadingSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {

@@ -5,7 +5,7 @@
 #include "../UI/InventoryDataAsset.h"
 #include "../UI/InteractionDataAsset.h"
 #include "../UI/InteractibleSlotWidget.h"
-#include "../DataAssetLoadingSubsystem.h"
+#include "../Subsystems/DataAssetLoadingSubsystem.h"
 #include "../UI/HUD_Player.h"
 #include "../Utils/InteractionInterface.h"
 #include "Components/ScrollBox.h"

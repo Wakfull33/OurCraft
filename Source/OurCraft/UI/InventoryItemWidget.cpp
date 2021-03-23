@@ -3,19 +3,12 @@
 
 #include "InventoryItemWidget.h"
 #include "InventoryTooltipWidget.h"
-#include "../DataAssetLoadingSubsystem.h"
+#include "../Subsystems/DataAssetLoadingSubsystem.h"
 #include "InventoryDataAsset.h"
 
 void UInventoryItemWidget::NativeConstruct()
 {
-	//UDataAssetLoadingSubsystem* DataAssetLoader = GetGameInstance()->GetSubsystem<UDataAssetLoadingSubsystem>();
-	//FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
-	//UInventoryDataAsset* InventoryDataAsset = InventoryDataAsset = DataAssetLoader->LoadDataAsset<UInventoryDataAsset>(AssetRegistryModule);
 
-	//if (InventoryDataAsset) {
-	//	Tooltip = CreateWidget<UInventoryTooltipWidget>(GetWorld(), InventoryDataAsset->InventoryTooltipWidgetReference);
-	//	UE_LOG(LogTemp, Warning, TEXT("%s    %s"), *InventoryDataAsset->InventoryTooltipWidgetReference->GetName())
-	//}
 }
 
 void UInventoryItemWidget::NativeOnMouseEnter(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)

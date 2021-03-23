@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Containers/Map.h"
 #include "../Utils/StructUtils.h"
 #include "Components/ActorComponent.h"
 #include "InventorySystemComponent.generated.h"
@@ -75,4 +76,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SwapItemStacks(UInventorySlotWidget* InSlot, UInventorySlotWidget* OutSlot);
+
+	UFUNCTION(BlueprintCallable)
+	void SplitItemStacks(UInventorySlotWidget* SlotToSplit, bool SplitInHalf);
+
+	UFUNCTION()
+	void DebugInventoryToString();
+
+	TPair<bool, UInventorySlotWidget*> IsInventoryFull();
 };

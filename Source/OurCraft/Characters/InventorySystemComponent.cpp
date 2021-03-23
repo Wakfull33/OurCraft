@@ -3,7 +3,7 @@
 
 #include "InventorySystemComponent.h"
 #include "GameFramework/Character.h"
-#include "../DataAssetLoadingSubsystem.h"
+#include "../Subsystems/DataAssetLoadingSubsystem.h"
 #include "../UI/InventoryDataAsset.h"
 #include "../UI/InventoryWidget.h"
 #include "../UI/InventorySlotWidget.h"
@@ -145,9 +145,9 @@ void UInventorySystemComponent::ToggleInventory()
 		SetupInventorySlots();
 		InventoryWidget->AddToViewport(100);
 		IsInventoryOpen = true;
-		//PlayerController->SetInputMode(FInputModeUIOnly::FInputModeUIOnly());
 		PlayerController->SetInputMode(FInputModeGameAndUI::FInputModeGameAndUI());
 		PlayerController->bShowMouseCursor = true;
+		DebugInventoryToString();
 	}
 	else 
 	{
@@ -186,6 +186,11 @@ void UInventorySystemComponent::UpdateInventoryItemInfos(UInventorySlotWidget* S
 {
 	UInventoryItemWidget* Item = Slot->GetSlotItem();
 
+	if(Item == nullptr && Inventory[SlotIndex].ItemData.Name != "Default Name"){
+		Item = CreateWidget<UInventoryItemWidget>(GetWorld(), InventoryDataAsset->InventoryItemWidgetReference);
+		Slot->SlotBorder->AddChild(Item);
+	}
+
 	if (Inventory[SlotIndex].ItemData.Name != "Default Name" && Item) {
 		Item->ItemIcon->SetBrushFromTexture(Inventory[SlotIndex].ItemData.Icon);
 		Item->ItemIcon->SetBrushTintColor(FSlateColor(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f)));
@@ -213,7 +218,7 @@ void UInventorySystemComponent::UpdateInventoryItemInfos(UInventoryItemWidget* I
 void UInventorySystemComponent::RemoveInventorySlots()
 {
 	if (InventoryWidget && InventorySlotWidget) {
-		for (int i = Inventory.Num() - 1; i > 0; --i)
+		for (int i = Inventory.Num() - 1; i >= 0; --i)
 		{
 			InventoryWidget->InventoryGrid->RemoveChildAt(i);
 		}
@@ -222,29 +227,94 @@ void UInventorySystemComponent::RemoveInventorySlots()
 
 void UInventorySystemComponent::SwapItemStacks(UInventorySlotWidget* InSlot, UInventorySlotWidget* OutSlot)
 {
-	UE_LOG(LogTemp, Warning, TEXT("=============================="))
-	UE_LOG(LogTemp, Warning, TEXT("[%d]: %s  =>  [%d]: %s"), InSlot->SlotIndex, *Inventory[InSlot->SlotIndex].ItemData.Name, OutSlot->SlotIndex, *Inventory[OutSlot->SlotIndex].ItemData.Name)
-
 	if ((InSlot->SlotIndex >= 0 && InSlot->SlotIndex < Inventory.Num()) && (OutSlot->SlotIndex >= 0 && OutSlot->SlotIndex < Inventory.Num()))
 	{
-		Inventory.Swap(InSlot->SlotIndex, OutSlot->SlotIndex);
-		
-		if (OutSlot->SlotBorder->GetChildrenCount() > 0) {
-			UInventoryItemWidget* ItemToAdd = CreateWidget<UInventoryItemWidget>(GetWorld(), InventoryDataAsset->InventoryItemWidgetReference);
-			UpdateInventoryItemInfos(ItemToAdd, InSlot->SlotIndex);
-			
-			InSlot->SlotBorder->RemoveChild(ItemToAdd);
-			InSlot->SlotBorder->AddChild(OutSlot->SlotBorder->GetChildAt(0));
-			OutSlot->SlotBorder->RemoveChildAt(0);
-			OutSlot->SlotBorder->AddChild(ItemToAdd);
-		}
-		else{
-			OutSlot->SlotBorder->AddChild(InSlot->SlotBorder->GetChildAt(0));
-			InSlot->SlotBorder->RemoveChild(0);
-		}
+		if (Inventory[InSlot->SlotIndex].ItemData == Inventory[OutSlot->SlotIndex].ItemData) {
+			FItemStack& InStack = Inventory[InSlot->SlotIndex];
+			FItemStack& OutStack = Inventory[OutSlot->SlotIndex];
 
-		UE_LOG(LogTemp, Warning, TEXT("[%d]: %s  =>  [%d]: %s"), InSlot->SlotIndex, *Inventory[InSlot->SlotIndex].ItemData.Name, OutSlot->SlotIndex, *Inventory[OutSlot->SlotIndex].ItemData.Name)
-		UE_LOG(LogTemp, Warning, TEXT("=============================="))
-		//UE_LOG(LogTemp, Warning, TEXT("Swap: [%d,%d] & [%d,%d]"), InSlot->SlotIndex % 8, InSlot->SlotIndex / 8, OutSlot->SlotIndex % 8, OutSlot->SlotIndex / 8)
+			if (OutStack.ItemCount + InStack.ItemCount <= OutStack.ItemData.MaxStack)
+			{
+				OutStack.ItemCount += InStack.ItemCount;
+				InStack = FItemStack();
+				InSlot->SlotBorder->RemoveChildAt(0);
+			}
+			else
+			{
+				int Diff = (InStack.ItemCount + OutStack.ItemCount) - OutStack.ItemData.MaxStack;
+				OutStack.ItemCount = OutStack.ItemData.MaxStack;
+				InStack.ItemCount = Diff;
+				UpdateInventoryItemInfos(InSlot, InSlot->SlotIndex);
+			}
+			UpdateInventoryItemInfos(OutSlot, OutSlot->SlotIndex);
+		}
+		else {
+			Inventory.Swap(InSlot->SlotIndex, OutSlot->SlotIndex);
+
+			if (OutSlot->SlotBorder->GetChildrenCount() > 0) {
+				UInventoryItemWidget* ItemToAdd = CreateWidget<UInventoryItemWidget>(GetWorld(), InventoryDataAsset->InventoryItemWidgetReference);
+				UpdateInventoryItemInfos(ItemToAdd, InSlot->SlotIndex);
+
+				InSlot->SlotBorder->RemoveChild(ItemToAdd);
+				InSlot->SlotBorder->AddChild(OutSlot->SlotBorder->GetChildAt(0));
+				OutSlot->SlotBorder->RemoveChildAt(0);
+				OutSlot->SlotBorder->AddChild(ItemToAdd);
+			}
+			else {
+				OutSlot->SlotBorder->AddChild(InSlot->SlotBorder->GetChildAt(0));
+				InSlot->SlotBorder->RemoveChild(0);
+			}
+		}
 	}
+}
+
+void UInventorySystemComponent::SplitItemStacks(UInventorySlotWidget* SlotToSplit, bool SplitInHalf)
+{
+	TPair<bool, UInventorySlotWidget*> InventoryFull = IsInventoryFull();
+	if (InventoryFull.Key == false && Inventory[SlotToSplit->SlotIndex].ItemCount >= 2) {
+		if (SplitInHalf) {
+			int SplitedCount = (Inventory[SlotToSplit->SlotIndex].ItemCount / 2) + (Inventory[SlotToSplit->SlotIndex].ItemCount % 2);
+			Inventory[SlotToSplit->SlotIndex].ItemCount /= 2;
+
+			Inventory[InventoryFull.Value->SlotIndex] = FItemStack(Inventory[SlotToSplit->SlotIndex].ItemData, SplitedCount);
+
+			UpdateInventoryItemInfos(SlotToSplit, SlotToSplit->SlotIndex);
+			UpdateInventoryItemInfos(InventoryFull.Value, InventoryFull.Value->SlotIndex);
+			if (InventoryFull.Value != nullptr) {
+				UE_LOG(LogTemp, Warning, TEXT("Old Stack: [%d] -> %d	New Stack: [%d] -> %d"), SlotToSplit->SlotIndex, Inventory[SlotToSplit->SlotIndex].ItemCount, InventoryFull.Value->SlotIndex, Inventory[InventoryFull.Value->SlotIndex].ItemCount)
+			}
+		}
+	}
+	else
+		UE_LOG(LogTemp, Warning, TEXT("Unable To Split Items: Inventory Is Full or not enought item to split in half"))
+}
+
+void UInventorySystemComponent::DebugInventoryToString()
+{
+	FString Return;
+
+	for (int i = 0; i < Inventory.Num(); ++i) {
+		if (Inventory[i].ItemData.Name != "Default Name")
+			Return.Append("[O]");
+		else
+			Return.Append("[ ]");
+
+		if (i < Inventory.Num() - 1)
+			Return.Append(",");
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *Return)
+}
+
+TPair<bool, UInventorySlotWidget*> UInventorySystemComponent::IsInventoryFull() {
+	for (int i = 0; i < Inventory.Num(); ++i)
+	{
+		if (Inventory[i].ItemData.Name == "Default Name") {
+			UInventorySlotWidget* EmptySlot = Cast<UInventorySlotWidget>(InventoryWidget->InventoryGrid->GetChildAt(i));
+			
+			return TPairInitializer<bool, UInventorySlotWidget*>(false, EmptySlot);
+		}
+	}
+
+	return TPairInitializer<bool, UInventorySlotWidget*>(true, nullptr);
 }
