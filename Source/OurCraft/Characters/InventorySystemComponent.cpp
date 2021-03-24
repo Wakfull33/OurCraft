@@ -8,7 +8,10 @@
 #include "../UI/InventoryWidget.h"
 #include "../UI/InventorySlotWidget.h"
 #include "../UI/InventoryItemWidget.h"
+#include "../UI/InventorySplitterWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/GridPanel.h"
+#include "Components/Border.h"
 
 // Sets default values for this component's properties
 UInventorySystemComponent::UInventorySystemComponent()
@@ -268,21 +271,39 @@ void UInventorySystemComponent::SwapItemStacks(UInventorySlotWidget* InSlot, UIn
 	}
 }
 
-void UInventorySystemComponent::SplitItemStacks(UInventorySlotWidget* SlotToSplit, bool SplitInHalf)
+void UInventorySystemComponent::SplitHalfItemStacks(UInventorySlotWidget* SlotToSplit)
 {
 	TPair<bool, UInventorySlotWidget*> InventoryFull = IsInventoryFull();
 	if (InventoryFull.Key == false && Inventory[SlotToSplit->SlotIndex].ItemCount >= 2) {
-		if (SplitInHalf) {
-			int SplitedCount = (Inventory[SlotToSplit->SlotIndex].ItemCount / 2) + (Inventory[SlotToSplit->SlotIndex].ItemCount % 2);
-			Inventory[SlotToSplit->SlotIndex].ItemCount /= 2;
+		int SplitedCount = (Inventory[SlotToSplit->SlotIndex].ItemCount / 2) + (Inventory[SlotToSplit->SlotIndex].ItemCount % 2);
+		Inventory[SlotToSplit->SlotIndex].ItemCount /= 2;
 
-			Inventory[InventoryFull.Value->SlotIndex] = FItemStack(Inventory[SlotToSplit->SlotIndex].ItemData, SplitedCount);
+		Inventory[InventoryFull.Value->SlotIndex] = FItemStack(Inventory[SlotToSplit->SlotIndex].ItemData, SplitedCount);
 
-			UpdateInventoryItemInfos(SlotToSplit, SlotToSplit->SlotIndex);
-			UpdateInventoryItemInfos(InventoryFull.Value, InventoryFull.Value->SlotIndex);
-			if (InventoryFull.Value != nullptr) {
-				UE_LOG(LogTemp, Warning, TEXT("Old Stack: [%d] -> %d	New Stack: [%d] -> %d"), SlotToSplit->SlotIndex, Inventory[SlotToSplit->SlotIndex].ItemCount, InventoryFull.Value->SlotIndex, Inventory[InventoryFull.Value->SlotIndex].ItemCount)
-			}
+		UpdateInventoryItemInfos(SlotToSplit, SlotToSplit->SlotIndex);
+		UpdateInventoryItemInfos(InventoryFull.Value, InventoryFull.Value->SlotIndex);
+		if (InventoryFull.Value != nullptr) {
+			UE_LOG(LogTemp, Warning, TEXT("Old Stack: [%d] -> %d	New Stack: [%d] -> %d"), SlotToSplit->SlotIndex, Inventory[SlotToSplit->SlotIndex].ItemCount, InventoryFull.Value->SlotIndex, Inventory[InventoryFull.Value->SlotIndex].ItemCount)
+		}
+	}
+	else
+		UE_LOG(LogTemp, Warning, TEXT("Unable To Split Items: Inventory Is Full or not enought item to split in half"))
+}
+
+void UInventorySystemComponent::SplitItemStacks(UInventorySlotWidget* SlotToSplit, int SplittedCount)
+{
+	TPair<bool, UInventorySlotWidget*> InventoryFull = IsInventoryFull();
+	if (InventoryFull.Key == false && Inventory[SlotToSplit->SlotIndex].ItemCount >= 2) {
+		int BaseCount = Inventory[SlotToSplit->SlotIndex].ItemCount;
+
+		Inventory[SlotToSplit->SlotIndex].ItemCount = SplittedCount;
+
+		Inventory[InventoryFull.Value->SlotIndex] = FItemStack(Inventory[SlotToSplit->SlotIndex].ItemData, BaseCount - SplittedCount);
+
+		UpdateInventoryItemInfos(SlotToSplit, SlotToSplit->SlotIndex);
+		UpdateInventoryItemInfos(InventoryFull.Value, InventoryFull.Value->SlotIndex);
+		if (InventoryFull.Value != nullptr) {
+			UE_LOG(LogTemp, Warning, TEXT("Old Stack: [%d] -> %d	New Stack: [%d] -> %d"), SlotToSplit->SlotIndex, Inventory[SlotToSplit->SlotIndex].ItemCount, InventoryFull.Value->SlotIndex, Inventory[InventoryFull.Value->SlotIndex].ItemCount)
 		}
 	}
 	else

@@ -2,4 +2,5 @@
 
 
 #include "InventoryTooltipWidget.h"
+#include "Components/TextBlock.h"
 

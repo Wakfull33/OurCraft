@@ -4,11 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Image.h"
-#include "Components/Border.h"
-#include "Components/TextBlock.h"
-#include "../Characters/InventorySystemComponent.h"
 #include "InventorySlotWidget.generated.h"
+
+#pragma region Forward Declarations
+
+class UInventorySystemComponent;
+class UBorder;
+class UInventoryItemWidget;
+
+#pragma endregion
+
 
 /**
  * 
@@ -30,5 +35,5 @@ public:
 	int SlotIndex;
 
 	UFUNCTION(BlueprintCallable)
-	class UInventoryItemWidget* GetSlotItem();
+	UInventoryItemWidget* GetSlotItem();
 };

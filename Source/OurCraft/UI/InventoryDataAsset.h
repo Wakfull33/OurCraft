@@ -6,6 +6,18 @@
 #include "Engine/DataAsset.h"
 #include "InventoryDataAsset.generated.h"
 
+#pragma region Forward Declarations
+
+class UInteractibleSlotWidget;
+
+class UInventoryWidget;
+class UInventorySlotWidget;
+class UInventoryItemWidget;
+class UInventoryTooltipWidget;
+class UInventorySplitterWidget;
+
+#pragma endregion
+
 /**
  * 
  */
@@ -17,19 +29,22 @@ class OURCRAFT_API UInventoryDataAsset : public UDataAsset
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class TSubclassOf<class UInteractibleSlotWidget> InteractibleSlotWidgetReference;
+	class TSubclassOf<UInteractibleSlotWidget> InteractibleSlotWidgetReference;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|Widgets")
-	class TSubclassOf<class UInventoryWidget> InventoryWidgetReference;
+	class TSubclassOf<UInventoryWidget> InventoryWidgetReference;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|Widgets")
-	class TSubclassOf<class UInventorySlotWidget> InventorySlotWidgetReference;
+	class TSubclassOf<UInventorySlotWidget> InventorySlotWidgetReference;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|Widgets")
-	class TSubclassOf<class UInventoryItemWidget> InventoryItemWidgetReference;
+	class TSubclassOf<UInventoryItemWidget> InventoryItemWidgetReference;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|Widgets")
-	class TSubclassOf<class UInventoryTooltipWidget> InventoryTooltipWidgetReference;
+	class TSubclassOf< UInventoryTooltipWidget> InventoryTooltipWidgetReference;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory|Widgets")
+	class TSubclassOf<UInventorySplitterWidget> InventorySplitterWidgetReference;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	int PlayerInventorySize;

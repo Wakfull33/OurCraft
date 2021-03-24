@@ -3,6 +3,9 @@
 
 #include "InventorySlotWidget.h"
 #include "InventoryItemWidget.h"
+#include "Components/Border.h"
+#include "Components/TextBlock.h"
+#include "../Characters/InventorySystemComponent.h"
 
 UInventoryItemWidget* UInventorySlotWidget::GetSlotItem()
 {

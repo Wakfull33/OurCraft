@@ -7,6 +7,15 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "DataAssetLoadingSubsystem.generated.h"
 
+#pragma region Forward Declarations
+
+class UInteractibleSlotWidget;
+
+class UInventoryDataAsset;
+class UInteractionDataAsset;
+
+#pragma endregion
+
 /**
  * 
  */
@@ -20,10 +29,10 @@ public:
 	virtual void Deinitialize() override;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	class UInventoryDataAsset* InventoryDataAsset = nullptr;
+	UInventoryDataAsset* InventoryDataAsset = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	class UInteractionDataAsset* InteractionDataAsset = nullptr;
+	UInteractionDataAsset* InteractionDataAsset = nullptr;
 
 	template<typename TDataAsset>
 	TDataAsset* LoadDataAsset(const FAssetRegistryModule& AssetRegistryModule) 

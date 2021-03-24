@@ -8,6 +8,17 @@
 #include "Components/ActorComponent.h"
 #include "InventorySystemComponent.generated.h"
 
+#pragma region Forward Declarations
+
+class ACharacter;
+class APlayerController;
+class UInventoryDataAsset;
+class UDataAssetLoadingSubsystem;
+class UInventorySlotWidget;
+class UInventoryItemWidget;
+class UInventoryWidget;
+
+#pragma endregion
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class OURCRAFT_API UInventorySystemComponent : public UActorComponent
@@ -34,25 +45,25 @@ public:
 	bool IsInventoryOpen = false;
 
 	UPROPERTY()
-	class ACharacter* OwnerCharacter = nullptr;
+	ACharacter* OwnerCharacter = nullptr;
 
 	UPROPERTY()
-	class APlayerController* PlayerController = nullptr;
+	APlayerController* PlayerController = nullptr;
 
 	UPROPERTY()
-	class UInventoryDataAsset* InventoryDataAsset = nullptr;
+	UInventoryDataAsset* InventoryDataAsset = nullptr;
 
 	UPROPERTY()
-	class UDataAssetLoadingSubsystem* DataAssetLoader = nullptr;
+	UDataAssetLoadingSubsystem* DataAssetLoader = nullptr;
 
 	UPROPERTY()
-	class UInventorySlotWidget* InventorySlotWidget = nullptr;
+	UInventorySlotWidget* InventorySlotWidget = nullptr;
 
 	UPROPERTY()
-	class UInventoryItemWidget* InventoryItemWidget = nullptr;
+	UInventoryItemWidget* InventoryItemWidget = nullptr;
 
 	UPROPERTY()
-	class UInventoryWidget* InventoryWidget = nullptr;
+	UInventoryWidget* InventoryWidget = nullptr;
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -78,7 +89,10 @@ public:
 	void SwapItemStacks(UInventorySlotWidget* InSlot, UInventorySlotWidget* OutSlot);
 
 	UFUNCTION(BlueprintCallable)
-	void SplitItemStacks(UInventorySlotWidget* SlotToSplit, bool SplitInHalf);
+	void SplitHalfItemStacks(UInventorySlotWidget* SlotToSplit);
+
+	UFUNCTION(BlueprintCallable)
+	void SplitItemStacks(UInventorySlotWidget* SlotToSplit, int SplittedCount);
 
 	UFUNCTION()
 	void DebugInventoryToString();

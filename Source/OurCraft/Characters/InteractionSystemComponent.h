@@ -6,6 +6,18 @@
 #include "Components/ActorComponent.h"
 #include "InteractionSystemComponent.generated.h"
 
+#pragma region Forward Declarations
+
+class APlayerController;
+class UInventoryDataAsset;
+class UInteractionDataAsset;
+class UDataAssetLoadingSubsystem;
+class UInteractibleSlotWidget;
+class UInteractibleSlotWidget;
+class AHUD_Player;
+class ACharacter;
+
+#pragma endregion
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class OURCRAFT_API UInteractionSystemComponent : public UActorComponent
@@ -43,25 +55,26 @@ public:
 	void SetupSlotInfo(UInteractibleSlotWidget* SlotWidget, AActor* Object);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class APlayerController* PlayerController = nullptr;
+	APlayerController* PlayerController = nullptr;
 
 private:
 
 	UPROPERTY()
-	class UInventoryDataAsset* InventoryDataAsset = nullptr;
+	UInventoryDataAsset* InventoryDataAsset = nullptr;
 
 	UPROPERTY()
-	class UInteractionDataAsset* InteractionDataAsset = nullptr;
+	UInteractionDataAsset* InteractionDataAsset = nullptr;
 
 	UPROPERTY()
-	class UDataAssetLoadingSubsystem* DataAssetLoader = nullptr;
+	UDataAssetLoadingSubsystem* DataAssetLoader = nullptr;
 
 	UPROPERTY()
-	class UInteractibleSlotWidget* InteractibleSlotWidget = nullptr;
+	UInteractibleSlotWidget* InteractibleSlotWidget = nullptr;
 
 	UPROPERTY()
-	class AHUD_Player* Hud = nullptr;
+	AHUD_Player* Hud = nullptr;
 
-	class ACharacter* OwnerCharacter = nullptr;
+	UPROPERTY()
+	ACharacter* OwnerCharacter = nullptr;
 
 };

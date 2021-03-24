@@ -10,6 +10,14 @@
 #include "../Characters/InventorySystemComponent.h"
 #include "InventoryItemWidget.generated.h"
 
+#pragma region Forward Declarations
+
+class UTextBlock;
+class UImage;
+class UInventoryTooltipWidget;
+
+#pragma endregion
+
 /**
  * 
  */
@@ -27,7 +35,7 @@ public:
 	UImage* ItemIcon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class UInventoryTooltipWidget* Tooltip = nullptr;
+	UInventoryTooltipWidget* Tooltip = nullptr;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool IsTooltipVisible = false;

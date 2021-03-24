@@ -5,6 +5,8 @@
 #include "InventoryTooltipWidget.h"
 #include "../Subsystems/DataAssetLoadingSubsystem.h"
 #include "InventoryDataAsset.h"
+#include "Components/TextBlock.h"
+#include "Components/Image.h"
 
 void UInventoryItemWidget::NativeConstruct()
 {

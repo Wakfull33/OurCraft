@@ -3,11 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/Button.h"
-#include "Components/TextBlock.h"
-#include "Components/GridPanel.h"
 #include "Blueprint/UserWidget.h"
 #include "InventoryWidget.generated.h"
+
+#pragma region Forward Declarations
+
+class UTextBlock;
+class UButton;
+class UGridPanel;
+
+#pragma endregion
 
 /**
  * 
